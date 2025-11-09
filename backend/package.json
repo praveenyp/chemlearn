@@ -11,9 +11,13 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "chemical-equation-balancer": "^1.0.2",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
-    "mongodb": "^6.20.0"
+    "fraction.js": "^5.3.4",
+    "mongodb": "^6.20.0",
+    "openai": "^6.7.0"
   }
 }

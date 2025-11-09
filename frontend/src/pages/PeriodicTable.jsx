@@ -1,89 +1,139 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 
-export default function PeriodicTable() {
+export default function ElementsPage() {
   const [elements, setElements] = useState([]);
-  const [selectedElement, setSelectedElement] = useState(null); // track clicked element
+  const [selected, setSelected] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
+  // ✅ Fetch elements from backend
   useEffect(() => {
-    axios
-      .get("http://localhost:5000/api/elements")
-      .then(res => setElements(res.data))
-      .catch(err => console.error(err));
+    const fetchElements = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/elements");
+        const data = await res.json();
+        setElements(data);
+      } catch (err) {
+        console.error("Error fetching elements:", err);
+        setError("Failed to load elements. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchElements();
   }, []);
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>Periodic Table of Elements</h1>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(10, 1fr)",
-          gap: "10px",
-          marginTop: "20px"
-        }}
-      >
-        {elements.map(el => (
-          <div
-            key={el.atomicNumber}
-            style={{
-              border: "1px solid #ccc",
-              borderRadius: "8px",
-              padding: "10px",
-              textAlign: "center",
-              cursor: "pointer"
-            }}
-            onClick={() => setSelectedElement(el)} // 👈 click event
-          >
-            <h3>{el.symbol}</h3>
-            <p>{el.name}</p>
-            <small>#{el.atomicNumber}</small>
-          </div>
-        ))}
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 flex flex-col items-center p-6">
+      {/* Header */}
+      <div className="text-center mb-10">
+        <h1 className="text-4xl font-extrabold text-blue-700 mb-2">
+        Periodic Elements Explorer
+        </h1>
+        <p className="text-gray-600 max-w-2xl mx-auto text-lg">
+          Explore the building blocks of chemistry. Click on any element card
+          to learn its key properties and uses.
+        </p>
       </div>
 
-      {/* Simple Popup Modal */}
-      {selectedElement && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            background: "rgba(0,0,0,0.5)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center"
-          }}
-          onClick={() => setSelectedElement(null)} // close when clicking outside
-        >
-          <div
-            style={{
-              background: "#fff",
-              padding: "20px",
-              borderRadius: "10px",
-              width: "400px",
-              position: "relative"
-            }}
-            onClick={(e) => e.stopPropagation()} // prevent close on inner click
-          >
-            <button
-              onClick={() => setSelectedElement(null)}
-              style={{ position: "absolute", top: 10, right: 10 }}
-            >
-              ❌
-            </button>
-            <h2>{selectedElement.name} ({selectedElement.symbol})</h2>
-            <p><b>Atomic Number:</b> {selectedElement.atomicNumber}</p>
-            <p><b>Atomic Mass:</b> {selectedElement.atomicMass}</p>
-            <p><b>Category:</b> {selectedElement.category}</p>
-            <p><b>Group:</b> {selectedElement.group}</p>
-            <p><b>Period:</b> {selectedElement.period}</p>
-            <p><b>Uses:</b> {selectedElement.uses?.join(", ")}</p>
-          </div>
+      {/* Loading */}
+      {loading && (
+        <div className="text-blue-600 text-lg font-semibold">
+          🔄 Loading elements...
         </div>
       )}
+
+      {/* Error */}
+      {error && (
+        <div className="text-red-600 bg-red-100 px-4 py-2 rounded-lg">
+          {error}
+        </div>
+      )}
+
+      {/* Elements Grid */}
+      {!loading && !error && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-5 w-full max-w-6xl"
+        >
+          {elements.map((el) => (
+            <motion.div
+              key={el.atomicNumber}
+              whileHover={{ scale: 1.05 }}
+              onClick={() => setSelected(el)}
+              className="bg-white cursor-pointer shadow-md hover:shadow-xl border border-gray-200 rounded-2xl p-4 text-center transition-all duration-200"
+            >
+              <h2 className="text-3xl font-bold text-blue-600">{el.symbol}</h2>
+              <p className="text-gray-700 font-medium">{el.name}</p>
+              <p className="text-sm text-gray-500">
+                Atomic No: {el.atomicNumber}
+              </p>
+            </motion.div>
+          ))}
+        </motion.div>
+      )}
+
+      {/* Element Detail Popup */}
+      {selected && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.3 }}
+            className="bg-white p-8 rounded-2xl shadow-2xl w-96 text-center relative"
+          >
+            <button
+              onClick={() => setSelected(null)}
+              className="absolute top-3 right-3 text-gray-500 hover:text-gray-800"
+            >
+              ✖
+            </button>
+
+            <h2 className="text-4xl font-bold text-blue-700 mb-2">
+              {selected.symbol}
+            </h2>
+            <h3 className="text-xl font-semibold text-gray-800 mb-3">
+              {selected.name}
+            </h3>
+            <p className="text-gray-600 mb-1">
+              <span className="font-semibold">Atomic Number:</span>{" "}
+              {selected.atomicNumber}
+            </p>
+            <p className="text-gray-600 mb-1">
+              <span className="font-semibold">Atomic Mass:</span>{" "}
+              {selected.atomicMass}
+            </p>
+            <p className="text-gray-600 mb-1">
+              <span className="font-semibold">Category:</span>{" "}
+              {selected.category}
+            </p>
+            <p className="text-gray-600 mb-3">
+              <span className="font-semibold">Group:</span> {selected.group},{" "}
+              <span className="font-semibold">Period:</span> {selected.period}
+            </p>
+
+            <h4 className="font-semibold text-gray-800 mt-4 mb-2">Uses:</h4>
+            <ul className="text-gray-600 text-sm list-disc list-inside text-left mx-auto w-3/4">
+              {selected.uses?.map((use, index) => (
+                <li key={index}>{use}</li>
+              ))}
+            </ul>
+
+            <button
+              onClick={() => setSelected(null)}
+              className="mt-5 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            >
+              Close
+            </button>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Footer */}
+      
     </div>
   );
 }
