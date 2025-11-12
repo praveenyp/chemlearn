@@ -58,8 +58,9 @@ All powered by modern UI/UX design, Gemini AI integration, and clean backend API
 
 ## ⚡ Installation & Setup
 
-### 🔹 Step 1: Clone the Repository
+### 
 ```bash
+🔹 Step 1: Clone the Repository
 git clone https://github.com/your-username/chemlearn.git
 cd chemlearn
 
