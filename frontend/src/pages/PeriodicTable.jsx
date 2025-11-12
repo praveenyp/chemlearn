@@ -1,139 +1,179 @@
-import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import React, { useEffect, useState } from "react";
+import ElementCard from "../components/ElementCard";
+import { useNavigate } from "react-router-dom";
+import AiAssistant from "../components/AiAssistant";
 
 export default function ElementsPage() {
   const [elements, setElements] = useState([]);
-  const [selected, setSelected] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("All");
+  const [selectedElement, setSelectedElement] = useState(null);
+  const [aiFact, setAiFact] = useState("");
 
   // ✅ Fetch elements from backend
   useEffect(() => {
-    const fetchElements = async () => {
-      try {
-        const res = await fetch("http://localhost:5000/api/elements");
-        const data = await res.json();
-        setElements(data);
-      } catch (err) {
-        console.error("Error fetching elements:", err);
-        setError("Failed to load elements. Please try again later.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchElements();
+    fetch("http://localhost:5000/api/elements")
+      .then((res) => res.json())
+      .then((data) => setElements(data))
+      .catch((err) => console.error("Error fetching elements:", err));
   }, []);
 
+  // ✅ Handle Filter Logic
+  const filteredElements = elements.filter((el) => {
+    const matchSearch = [el.name, el.symbol, el.category]
+      .join(" ")
+      .toLowerCase()
+      .includes(search.toLowerCase());
+    const matchFilter =
+      filter === "All" || el.category?.toLowerCase().includes(filter.toLowerCase());
+    return matchSearch && matchFilter;
+  });
+
+  // ✅ AI Fun Fact (call backend)
+  const getAiFact = async (elementName) => {
+    try {
+      const res = await fetch("http://localhost:5000/api/ai-fact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ element: elementName }),
+      });
+      const data = await res.json();
+      setAiFact(data.fact || "No fact available right now.");
+    } catch {
+      setAiFact("AI fact unavailable at the moment.");
+    }
+  };
+
+  // ✅ When popup opens, fetch AI fact
+  const handleOpenElement = (el) => {
+    setSelectedElement(el);
+    setAiFact("Fetching fun fact...");
+    getAiFact(el.name);
+  };
+
+  const filters = ["All", "Metal", "Nonmetal", "Gas", "Noble Gas", "Halogen"];
+const navigate = useNavigate();
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 flex flex-col items-center p-6">
-      {/* Header */}
-      <div className="text-center mb-10">
-        <h1 className="text-4xl font-extrabold text-blue-700 mb-2">
-        Periodic Elements Explorer
-        </h1>
-        <p className="text-gray-600 max-w-2xl mx-auto text-lg">
-          Explore the building blocks of chemistry. Click on any element card
-          to learn its key properties and uses.
-        </p>
+    
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 p-6">
+       <nav className="backdrop-blur-md bg-white/70 border-b border-[#90e0ef]/40 sticky top-0 z-50">
+        <div className="flex justify-between items-center px-10 py-4">
+          <h1
+            onClick={() => navigate("/")}
+            className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#0077b6] to-[#00b4d8] cursor-pointer"
+          >
+          ChemLearn
+          </h1>
+          <ul className="flex gap-6 text-[#0077b6] font-medium">
+             <li
+              onClick={() => navigate("/")}
+              className="cursor-pointer hover:text-[#0096c7] transition"
+            >
+              Home
+            </li>
+            <li
+              onClick={() => navigate("/elements")}
+              className="cursor-pointer hover:text-[#0096c7] transition"
+            >
+              Elements
+            </li>
+            <li
+              onClick={() => navigate("/quizzes")}
+              className="cursor-pointer hover:text-[#0096c7] transition"
+            >
+              Quiz
+            </li>
+            <li
+              onClick={() => navigate("/reaction")}
+              className="cursor-pointer hover:text-[#0096c7] transition"
+            >
+              AI Balancer
+            </li>
+           
+          </ul>
+        </div>
+      </nav>
+      <h1 className="text-4xl font-extrabold text-center text-blue-700 mb-6">
+        🔬 ChemLearn – Elements Explorer
+      </h1>
+
+      {/* 🔍 Search Bar */}
+      <div className="flex justify-center mb-4">
+        <input
+          type="text"
+          placeholder="Search by name, symbol, or category..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full max-w-md p-3 border rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 outline-none"
+        />
       </div>
 
-      {/* Loading */}
-      {loading && (
-        <div className="text-blue-600 text-lg font-semibold">
-          🔄 Loading elements...
-        </div>
-      )}
-
-      {/* Error */}
-      {error && (
-        <div className="text-red-600 bg-red-100 px-4 py-2 rounded-lg">
-          {error}
-        </div>
-      )}
-
-      {/* Elements Grid */}
-      {!loading && !error && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
-          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-5 w-full max-w-6xl"
-        >
-          {elements.map((el) => (
-            <motion.div
-              key={el.atomicNumber}
-              whileHover={{ scale: 1.05 }}
-              onClick={() => setSelected(el)}
-              className="bg-white cursor-pointer shadow-md hover:shadow-xl border border-gray-200 rounded-2xl p-4 text-center transition-all duration-200"
-            >
-              <h2 className="text-3xl font-bold text-blue-600">{el.symbol}</h2>
-              <p className="text-gray-700 font-medium">{el.name}</p>
-              <p className="text-sm text-gray-500">
-                Atomic No: {el.atomicNumber}
-              </p>
-            </motion.div>
-          ))}
-        </motion.div>
-      )}
-
-      {/* Element Detail Popup */}
-      {selected && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.3 }}
-            className="bg-white p-8 rounded-2xl shadow-2xl w-96 text-center relative"
+      {/* 🧭 Filter Buttons */}
+      <div className="flex flex-wrap justify-center gap-2 mb-6">
+        {filters.map((f) => (
+          <button
+            key={f}
+            onClick={() => setFilter(f)}
+            className={`px-4 py-2 rounded-full text-sm font-medium shadow-sm transition-all ${
+              filter === f
+                ? "bg-blue-600 text-white"
+                : "bg-white text-blue-600 border border-blue-300 hover:bg-blue-100"
+            }`}
           >
+            {f}
+          </button>
+        ))}
+      </div>
+
+      {/* 🧪 Element Grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        {filteredElements.map((el) => (
+          <ElementCard key={el._id} element={el} onClick={handleOpenElement} />
+        ))}
+      </div>
+
+      {/* 🧠 Popup Modal */}
+      {selectedElement && (
+        <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
+          <div className="bg-white rounded-2xl shadow-xl p-6 w-11/12 max-w-lg relative">
             <button
-              onClick={() => setSelected(null)}
-              className="absolute top-3 right-3 text-gray-500 hover:text-gray-800"
+              onClick={() => setSelectedElement(null)}
+              className="absolute top-2 right-3 text-gray-500 hover:text-red-500 text-xl"
             >
               ✖
             </button>
 
-            <h2 className="text-4xl font-bold text-blue-700 mb-2">
-              {selected.symbol}
+            <h2 className="text-3xl font-bold text-blue-700 mb-2">
+              {selectedElement.name} ({selectedElement.symbol})
             </h2>
-            <h3 className="text-xl font-semibold text-gray-800 mb-3">
-              {selected.name}
-            </h3>
-            <p className="text-gray-600 mb-1">
-              <span className="font-semibold">Atomic Number:</span>{" "}
-              {selected.atomicNumber}
-            </p>
-            <p className="text-gray-600 mb-1">
-              <span className="font-semibold">Atomic Mass:</span>{" "}
-              {selected.atomicMass}
-            </p>
-            <p className="text-gray-600 mb-1">
-              <span className="font-semibold">Category:</span>{" "}
-              {selected.category}
-            </p>
             <p className="text-gray-600 mb-3">
-              <span className="font-semibold">Group:</span> {selected.group},{" "}
-              <span className="font-semibold">Period:</span> {selected.period}
+              Atomic Number: {selectedElement.atomicNumber}
+            </p>
+            <p className="text-gray-700">
+              <strong>Group:</strong> {selectedElement.group} |{" "}
+              <strong>Period:</strong> {selectedElement.period}
+            </p>
+            <p className="mt-3 text-gray-700">
+              <strong>Category:</strong> {selectedElement.category}
+            </p>
+            <p className="mt-3 text-gray-700">
+              <strong>Atomic Mass:</strong> {selectedElement.atomicMass}
+            </p>
+            <p className="mt-3 text-gray-700">
+              <strong>Uses:</strong>{" "}
+              {selectedElement.uses && selectedElement.uses.join(", ")}
             </p>
 
-            <h4 className="font-semibold text-gray-800 mt-4 mb-2">Uses:</h4>
-            <ul className="text-gray-600 text-sm list-disc list-inside text-left mx-auto w-3/4">
-              {selected.uses?.map((use, index) => (
-                <li key={index}>{use}</li>
-              ))}
-            </ul>
-
-            <button
-              onClick={() => setSelected(null)}
-              className="mt-5 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-            >
-              Close
-            </button>
-          </motion.div>
+            {/* 🤖 AI Fun Fact */}
+            <div className="mt-4 p-3 bg-blue-50 border-l-4 border-blue-600 rounded">
+              <p className="text-blue-700 italic">
+                <strong>AI Fact:</strong> {aiFact}
+              </p>
+            </div>
+          </div>
         </div>
       )}
-
-      {/* Footer */}
-      
+      <AiAssistant/>
     </div>
   );
 }

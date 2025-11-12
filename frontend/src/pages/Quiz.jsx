@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import AiAssistant from "../components/AiAssistant";
+
 
 export default function QuizPage() {
+  const navigate = useNavigate();
+
   const [quizzes, setQuizzes] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
@@ -48,7 +53,7 @@ export default function QuizPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 text-blue-600 font-semibold text-xl">
-       🔄 Loading the quiz...
+        🔄 Loading the quiz...
       </div>
     );
   }
@@ -65,17 +70,44 @@ export default function QuizPage() {
     const percentage = ((score / quizzes.length) * 100).toFixed(0);
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 flex flex-col items-center justify-center p-6">
+        {/* ✅ Navbar */}
+        <nav className="fixed top-0 left-0 w-full bg-white/70 backdrop-blur-md border-b border-[#90e0ef]/50 shadow-sm z-50">
+          <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-3">
+            <h1
+              onClick={() => navigate("/")}
+              className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#0077b6] to-[#00b4d8] tracking-wide cursor-pointer"
+            >
+              ChemLearn
+            </h1>
+            <ul className="hidden md:flex gap-6 text-[#0077b6] font-medium">
+              <li onClick={() => navigate("/")} className="hover:text-[#00b4d8] cursor-pointer transition-all">
+                Home
+              </li>
+              <li onClick={() => navigate("/elements")} className="hover:text-[#00b4d8] cursor-pointer transition-all">
+                Elements
+              </li>
+              <li onClick={() => navigate("/reaction")} className="hover:text-[#00b4d8] cursor-pointer transition-all">
+                Reactions
+              </li>
+              <li onClick={() => navigate("/quizzes")} className="hover:text-[#00b4d8] cursor-pointer transition-all">
+                Quizzes
+              </li>
+            </ul>
+          </div>
+        </nav>
+
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.4 }}
-          className="bg-white shadow-2xl rounded-2xl p-10 text-center max-w-lg"
+          className="bg-white shadow-2xl rounded-2xl p-10 text-center max-w-lg mt-20"
         >
           <h1 className="text-3xl font-bold text-blue-700 mb-4">
-          Quiz Completed!
+            Quiz Completed!
           </h1>
           <p className="text-lg text-gray-700 mb-2">
-            You scored <span className="font-semibold text-blue-600">{score}</span> out of{" "}
+            You scored{" "}
+            <span className="font-semibold text-blue-600">{score}</span> out of{" "}
             {quizzes.length}.
           </p>
           <p className="text-gray-600">
@@ -100,7 +132,34 @@ export default function QuizPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 flex flex-col items-center p-6">
-      <div className="text-center mb-8">
+      {/* ✅ Navbar */}
+      <nav className="fixed top-0 left-0 w-full bg-white/70 backdrop-blur-md border-b border-[#90e0ef]/50 shadow-sm z-50">
+        <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-3">
+          <h1
+            onClick={() => navigate("/")}
+            className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#0077b6] to-[#00b4d8] tracking-wide cursor-pointer"
+          >
+            ChemLearn
+          </h1>
+          <ul className="hidden md:flex gap-6 text-[#0077b6] font-medium">
+            <li onClick={() => navigate("/")} className="hover:text-[#00b4d8] cursor-pointer transition-all">
+              Home
+            </li>
+            <li onClick={() => navigate("/elements")} className="hover:text-[#00b4d8] cursor-pointer transition-all">
+              Elements
+            </li>
+            <li onClick={() => navigate("/reaction")} className="hover:text-[#00b4d8] cursor-pointer transition-all">
+              Reactions
+            </li>
+            <li onClick={() => navigate("/quizzes")} className="hover:text-[#00b4d8] cursor-pointer transition-all">
+              Quizzes
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+      {/* Page Content */}
+      <div className="pt-24 text-center mb-8">
         <h1 className="text-4xl font-extrabold text-blue-700 mb-2">
           Chemistry Quiz
         </h1>
@@ -173,7 +232,7 @@ export default function QuizPage() {
           </div>
         )}
       </motion.div>
-
+      <AiAssistant/>
     </div>
   );
 }

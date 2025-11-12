@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-
+import AiAssistant from "../components/AiAssistant";
 export default function ReactionBalancer() {
   const [equation, setEquation] = useState("");
   const [aiResponse, setAiResponse] = useState(null);
@@ -106,6 +106,7 @@ export default function ReactionBalancer() {
     <div className="text-center text-sm text-gray-500 mt-8">
       Powered by <span className="font-semibold text-blue-600">Gemini AI</span>
     </div>
+    <AiAssistant/>
   </div>
 );
 

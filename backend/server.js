@@ -101,8 +101,54 @@ Equation: ${equation}
 });
 
 
+// ✅ AI Fun Fact for Elements
+app.post("/api/ai-fact", async (req, res) => {
+  try {
+    const { element } = req.body;
+    if (!element) {
+      return res.status(400).json({ error: "Element name required" });
+    }
+
+    // Use the same Gemini model you already defined above
+    const model = genAI.getGenerativeModel({ model: "models/gemini-2.5-flash" });
+
+    const prompt = `
+You are an educational chemistry assistant.
+Give one short and fun chemistry fact about the element "${element}".
+Keep it in 1–2 sentences, simple enough for students.
+`;
+
+    const result = await model.generateContent(prompt);
+    const fact = result.response.text();
+
+    res.json({ fact });
+  } catch (err) {
+    console.error("AI fact error:", err);
+    res.status(500).json({ error: "AI service unavailable." });
+  }
+});
 
 
+// AI Chat Endpoint
+app.post("/api/ai-chat", async (req, res) => {
+  try {
+    const { message } = req.body;
+
+    if (!message)
+      return res.status(400).json({ error: "Message required" });
+
+    const model = genAI.getGenerativeModel({ model: "models/gemini-2.5-flash" });
+
+    const prompt = `You are a helpful chemistry tutor. Respond simply to: ${message}`;
+    const result = await model.generateContent(prompt);
+
+    const reply = result.response.text();
+    res.json({ reply });
+  } catch (err) {
+    console.error("AI Chat error:", err);
+    res.status(500).json({ error: "AI chat service unavailable." });
+  }
+});
 
 
 const PORT = 5000;
