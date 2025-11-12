@@ -54,35 +54,7 @@ All powered by modern UI/UX design, Gemini AI integration, and clean backend API
 
 ---
 
-## 🧭 Project Structure
 
-chemlearn/
-│
-├── backend/
-│ ├── server.js # Express server & APIs
-│ ├── db.js # MongoDB connection
-│ ├── .env # Environment variables
-│ └── package.json
-│
-├── frontend/
-│ ├── src/
-│ │ ├── components/
-│ │ │ ├── Navbar.jsx
-│ │ │ ├── ElementCard.jsx
-│ │ │ ├── AiAssistant.jsx
-│ │ ├── pages/
-│ │ │ ├── HomePage.jsx
-│ │ │ ├── ElementsPage.jsx
-│ │ │ ├── QuizPage.jsx
-│ │ │ └── ReactionBalancer.jsx
-│ │ ├── App.jsx
-│ │ └── main.jsx
-│ └── package.json
-│
-└── README.md
-
-
----
 
 ## ⚡ Installation & Setup
 
